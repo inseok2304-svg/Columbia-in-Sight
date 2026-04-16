@@ -234,6 +234,235 @@ const Lion = ({size=30}) => (
   </svg>
 );
 
+
+/* ── AlumniSearch: App 외부 독립 컴포넌트 (포커스 유지) ── */
+function AlumniPage({
+  alumInd, setAlumInd, alumQ, setAlumQ,
+  selAlum, setSelAlum,
+  setEmailModal, setDraft, setLogModal, setTrkAlum,
+  setTab, setMenuOpen,
+  isMobile, p
+}) {
+  const go = (t) => { setTab(t); setMenuOpen(false); setSelAlum(null); };
+  const Sec = ({children}) => <div style={{maxWidth:860,margin:"0 auto",padding:"16px 16px 60px"}}>{children}</div>;
+
+  const fAlumni = ALUMNI.filter(a => {
+    const q = alumQ.toLowerCase();
+    return (alumInd==="All" || a.industry===alumInd)
+      && (!q || a.name.toLowerCase().includes(q) || a.company.toLowerCase().includes(q) || a.role.toLowerCase().includes(q));
+  });
+
+  if (selAlum) {
+    const ind = INDUSTRIES.find(x=>x.id===selAlum.industry);
+    const ic = ind?.color || C.blue;
+    return (
+      <Sec>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+          <button onClick={()=>setSelAlum(null)} style={{fontFamily:"inherit",cursor:"pointer",borderRadius:8,border:`1px solid ${C.border}`,background:"#F1F5F9",color:C.muted,padding:"7px 14px",fontSize:12,fontWeight:600}}>← Back</button>
+          <span style={{fontSize:13,color:C.muted}}>Alumni Directory</span>
+        </div>
+        <div style={{background:"#fff",borderRadius:12,border:`1px solid ${C.border}`,boxShadow:"0 1px 6px rgba(0,48,101,0.07)",overflow:"hidden",marginBottom:14}}>
+          <div style={{height:4,background:ic}}/>
+          <div style={{padding:p}}>
+            <div style={{display:"flex",gap:14,alignItems:"flex-start"}}>
+              <div style={{width:56,height:56,borderRadius:"50%",background:ic,color:"#fff",fontWeight:700,fontSize:18,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>{selAlum.av}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:isMobile?16:18,fontWeight:700,color:C.navy,marginBottom:4,fontFamily:"'Playfair Display',serif"}}>{selAlum.name}</div>
+                <div style={{fontSize:13,color:C.muted,marginBottom:6}}>{selAlum.role}</div>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
+                  <span style={{fontSize:11,fontWeight:600,color:ic,background:ic+"22",border:`1px solid ${ic}44`,padding:"2px 8px",borderRadius:20}}>{selAlum.company}</span>
+                  <span style={{fontSize:11,fontWeight:600,color:ic,background:ic+"22",border:`1px solid ${ic}44`,padding:"2px 8px",borderRadius:20}}>{ind?.label}</span>
+                  <span style={{fontSize:11,color:C.soft,alignSelf:"center"}}>{selAlum.cls}</span>
+                </div>
+                <span style={{fontSize:11,fontWeight:600,color:SC[selAlum.status]||C.blue,background:(SC[selAlum.status]||C.blue)+"22",border:`1px solid ${(SC[selAlum.status]||C.blue)}44`,padding:"2px 8px",borderRadius:20}}>{selAlum.status}</span>
+              </div>
+            </div>
+            <div style={{display:"flex",gap:8,marginTop:14,flexWrap:"wrap"}}>
+              <button onClick={()=>{setEmailModal(selAlum);setDraft("");}} style={{fontFamily:"inherit",cursor:"pointer",borderRadius:8,border:`1px solid ${ic}`,background:ic,color:"#fff",padding:"7px 14px",fontSize:12,fontWeight:600}}>✉ Draft Cold Email</button>
+              <button onClick={()=>setLogModal(selAlum)} style={{fontFamily:"inherit",cursor:"pointer",borderRadius:8,border:`1px solid ${C.border}`,background:"#F1F5F9",color:C.muted,padding:"7px 14px",fontSize:12,fontWeight:600}}>📝 Log Interaction</button>
+              <button onClick={()=>{setTrkAlum(selAlum);go("tracker");}} style={{fontFamily:"inherit",cursor:"pointer",borderRadius:8,border:`1px solid ${C.border}`,background:"#F1F5F9",color:C.muted,padding:"7px 14px",fontSize:12,fontWeight:600}}>📊 View Timeline</button>
+            </div>
+          </div>
+        </div>
+        <div style={{background:"#fff",borderRadius:12,border:`1px solid ${C.border}`,boxShadow:"0 1px 6px rgba(0,48,101,0.07)",overflow:"hidden",marginBottom:14}}>
+          <div style={{padding:p,borderBottom:`1px solid ${C.border}`}}><h3 style={{fontSize:14,fontWeight:700,color:C.navy,margin:0}}>💬 Notes & Context</h3></div>
+          <div style={{padding:p}}>
+            <p style={{fontSize:13,color:C.text,lineHeight:1.65,margin:0}}>{selAlum.note}</p>
+            <p style={{fontSize:11,color:C.soft,margin:"8px 0 0"}}>Last contact: {selAlum.last}</p>
+          </div>
+        </div>
+        <div style={{background:"#fff",borderRadius:12,border:`1px solid ${C.border}`,boxShadow:"0 1px 6px rgba(0,48,101,0.07)",overflow:"hidden"}}>
+          <div style={{padding:p,borderBottom:`1px solid ${C.border}`}}><h3 style={{fontSize:14,fontWeight:700,color:C.navy,margin:0}}>🎓 Interview Prep — {selAlum.company}</h3></div>
+          <div style={{padding:p,display:"flex",flexDirection:"column",gap:10}}>
+            {[
+              {label:"Process", val:"Typically 4–5 rounds: phone screen, case/technical, behavioral, and a final panel. Expect 6–8 weeks total."},
+              {label:"Key Skills", val:selAlum.industry==="tech"?"Product thinking, data fluency, cross-functional leadership, SQL basics.":selAlum.industry==="consulting"?"Problem structuring, hypothesis-driven thinking, executive communication, case interviews.":selAlum.industry==="finance"?"Financial modeling, valuation (DCF, comps, LBO), sector knowledge, deal execution.":selAlum.industry==="pe_vc"?"LBO modeling, deal sourcing, portfolio ops, operator mindset.":selAlum.industry==="healthcare"?"Healthcare systems, regulatory landscape, market access, reimbursement strategy.":selAlum.industry==="consumer"?"Consumer insight, brand strategy, P&L management, go-to-market execution.":selAlum.industry==="media"?"Content strategy, monetization models, audience analytics, partnership development.":selAlum.industry==="energy"?"Energy economics, ESG integration, infrastructure finance, regulatory policy.":selAlum.industry==="realestate"?"RE finance, cap rates, development underwriting, market analysis.":"Stakeholder management, program evaluation, policy analysis, impact measurement."},
+              {label:"Alumni Tip", val:`"${selAlum.note} Connect your PwC AI/Digital and RLWRLD Physical AI experience to what this role demands."`},
+              {label:"CBS Resources", val:`CMC runs ${selAlum.company} prep workshops each semester. Check the CBS Alumni Interview Database for past questions.`},
+            ].map(x=>(
+              <div key={x.label} style={{padding:"12px 14px",background:C.bg,borderRadius:8,border:`1px solid ${C.border}`}}>
+                <div style={{fontSize:10,fontWeight:700,color:ic,textTransform:"uppercase",letterSpacing:0.5,marginBottom:5}}>{x.label}</div>
+                <div style={{fontSize:13,color:C.text,lineHeight:1.65}}>{x.val}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Sec>
+    );
+  }
+
+  return (
+    <Sec>
+      <h2 style={{fontSize:isMobile?16:18,fontWeight:700,color:C.navy,margin:"0 0 14px",fontFamily:"'Playfair Display',serif"}}>Alumni Directory</h2>
+      <div style={{background:"#fff",borderRadius:12,border:`1px solid ${C.border}`,boxShadow:"0 1px 6px rgba(0,48,101,0.07)",overflow:"hidden",marginBottom:14}}>
+        <div style={{padding:p}}>
+          <input
+            value={alumQ}
+            onChange={e=>setAlumQ(e.target.value)}
+            placeholder="🔍  Search by name, company, or role…"
+            style={{width:"100%",border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",background:C.bg,color:C.text,boxSizing:"border-box",marginBottom:12}}
+          />
+          <div style={{fontSize:11,fontWeight:700,color:C.muted,marginBottom:6,textTransform:"uppercase",letterSpacing:0.5}}>Filter by Industry</div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            <button onClick={()=>setAlumInd("All")} style={{fontFamily:"inherit",cursor:"pointer",borderRadius:8,border:`1px solid ${alumInd==="All"?C.blue:C.border}`,background:alumInd==="All"?C.blue:"#F1F5F9",color:alumInd==="All"?"#fff":C.muted,padding:"4px 10px",fontSize:11,fontWeight:600}}>All</button>
+            {INDUSTRIES.map(ind=>(
+              <button key={ind.id} onClick={()=>setAlumInd(ind.id)} style={{fontFamily:"inherit",cursor:"pointer",borderRadius:8,border:`1px solid ${alumInd===ind.id?ind.color:C.border}`,background:alumInd===ind.id?ind.color:"#F1F5F9",color:alumInd===ind.id?"#fff":C.muted,padding:"4px 10px",fontSize:11,fontWeight:600}}>{ind.label}</button>
+            ))}
+          </div>
+          <div style={{fontSize:12,color:C.muted,marginTop:10}}>{fAlumni.length} alumni found</div>
+        </div>
+      </div>
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {fAlumni.map(a=>{
+          const ind=INDUSTRIES.find(x=>x.id===a.industry);
+          return (
+            <div key={a.id} style={{background:"#fff",borderRadius:12,border:`1px solid ${C.border}`,boxShadow:"0 1px 6px rgba(0,48,101,0.07)",overflow:"hidden",cursor:"pointer"}} onClick={()=>setSelAlum(a)}>
+              <div style={{padding:p}}>
+                <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                  <div style={{width:44,height:44,borderRadius:"50%",background:ind?.color||C.blue,color:"#fff",fontWeight:700,fontSize:14,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>{a.av}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:6,marginBottom:4}}>
+                      <span style={{fontSize:14,fontWeight:700,color:C.navy}}>{a.name}</span>
+                      <span style={{fontSize:11,fontWeight:600,color:SC[a.status]||C.blue,background:(SC[a.status]||C.blue)+"22",border:`1px solid ${(SC[a.status]||C.blue)}44`,padding:"2px 8px",borderRadius:20}}>{a.status}</span>
+                    </div>
+                    <div style={{fontSize:12,color:C.muted,marginBottom:6}}>{a.role}</div>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                      <span style={{fontSize:11,fontWeight:600,color:ind?.color||C.blue,background:(ind?.color||C.blue)+"22",border:`1px solid ${(ind?.color||C.blue)}44`,padding:"2px 8px",borderRadius:20}}>{a.company}</span>
+                      <span style={{fontSize:11,fontWeight:600,color:ind?.color||C.blue,background:(ind?.color||C.blue)+"22",border:`1px solid ${(ind?.color||C.blue)}44`,padding:"2px 8px",borderRadius:20}}>{ind?.label}</span>
+                      <span style={{fontSize:11,color:C.soft,alignSelf:"center"}}>{a.cls}</span>
+                    </div>
+                  </div>
+                </div>
+                <div style={{display:"flex",gap:8,marginTop:12}}>
+                  <button onClick={e=>{e.stopPropagation();setEmailModal(a);setDraft("");}} style={{fontFamily:"inherit",cursor:"pointer",borderRadius:8,border:`1px solid ${ind?.color||C.blue}`,background:ind?.color||C.blue,color:"#fff",padding:"7px 14px",fontSize:11,fontWeight:600,flex:1}}>✉ Email</button>
+                  <button onClick={e=>{e.stopPropagation();setLogModal(a);}} style={{fontFamily:"inherit",cursor:"pointer",borderRadius:8,border:`1px solid ${C.border}`,background:"#F1F5F9",color:C.muted,padding:"7px 14px",fontSize:11,fontWeight:600,flex:1}}>📝 Log</button>
+                  <span style={{marginLeft:"auto",alignSelf:"center",fontSize:12,color:C.soft}}>View profile →</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Sec>
+  );
+}
+
+function NewsPage({newsInd, setNewsInd, newsQ, setNewsQ, setNewsDetail, isMobile, p}) {
+  const Sec = ({children}) => <div style={{maxWidth:860,margin:"0 auto",padding:"16px 16px 60px"}}>{children}</div>;
+
+  const fNews = NEWS.filter(n=>{
+    const q = newsQ.toLowerCase();
+    return (newsInd==="All" || n.ind===newsInd)
+      && (!q || n.title.toLowerCase().includes(q) || n.company.toLowerCase().includes(q) || n.cat.toLowerCase().includes(q) || n.tag.toLowerCase().includes(q));
+  });
+
+  return (
+    <Sec>
+      <h2 style={{fontSize:isMobile?16:18,fontWeight:700,color:C.navy,margin:"0 0 14px",fontFamily:"'Playfair Display',serif"}}>Industry News Feed</h2>
+      <div style={{background:"#fff",borderRadius:12,border:`1px solid ${C.border}`,boxShadow:"0 1px 6px rgba(0,48,101,0.07)",overflow:"hidden",marginBottom:14}}>
+        <div style={{padding:p}}>
+          <input
+            value={newsQ}
+            onChange={e=>setNewsQ(e.target.value)}
+            placeholder="🔍  Search news, companies, topics…"
+            style={{width:"100%",border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",background:C.bg,color:C.text,boxSizing:"border-box",marginBottom:12}}
+          />
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            <button onClick={()=>setNewsInd("All")} style={{fontFamily:"inherit",cursor:"pointer",borderRadius:8,border:`1px solid ${newsInd==="All"?C.blue:C.border}`,background:newsInd==="All"?C.blue:"#F1F5F9",color:newsInd==="All"?"#fff":C.muted,padding:"4px 10px",fontSize:11,fontWeight:600}}>All Industries</button>
+            {INDUSTRIES.map(ind=>(
+              <button key={ind.id} onClick={()=>setNewsInd(ind.id)} style={{fontFamily:"inherit",cursor:"pointer",borderRadius:8,border:`1px solid ${newsInd===ind.id?ind.color:C.border}`,background:newsInd===ind.id?ind.color:"#F1F5F9",color:newsInd===ind.id?"#fff":C.muted,padding:"4px 10px",fontSize:11,fontWeight:600}}>{ind.label}</button>
+            ))}
+          </div>
+          <div style={{fontSize:12,color:C.muted,marginTop:10}}>{fNews.length} stories</div>
+        </div>
+      </div>
+
+      {newsInd==="All" && !newsQ ? (
+        INDUSTRIES.map(ind=>{
+          const indNews = NEWS.filter(n=>n.ind===ind.id);
+          if(!indNews.length) return null;
+          return (
+            <div key={ind.id} style={{marginBottom:20}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+                <div style={{width:4,height:18,borderRadius:2,background:ind.color,flexShrink:0}}/>
+                <h3 style={{fontSize:14,fontWeight:700,color:C.navy,margin:0}}>{ind.label}</h3>
+                <span style={{fontSize:11,color:ind.color,background:ind.color+"18",padding:"1px 8px",borderRadius:20,fontWeight:600}}>{indNews.length}</span>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {indNews.map(n=>(
+                  <div key={n.id} style={{background:"#fff",borderRadius:12,border:`1px solid ${C.border}`,boxShadow:"0 1px 6px rgba(0,48,101,0.07)",overflow:"hidden",cursor:"pointer",borderLeft:`3px solid ${ind.color}`}} onClick={()=>setNewsDetail(n)}>
+                    <div style={{padding:"12px 16px"}}>
+                      <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:6,marginBottom:6}}>
+                        <div style={{display:"flex",gap:6}}>
+                          <span style={{fontSize:11,fontWeight:600,color:ind.color,background:ind.color+"22",border:`1px solid ${ind.color}44`,padding:"2px 8px",borderRadius:20}}>{n.company}</span>
+                          <span style={{fontSize:11,fontWeight:600,color:C.muted,background:C.muted+"22",border:`1px solid ${C.muted}44`,padding:"2px 8px",borderRadius:20}}>{n.cat}</span>
+                        </div>
+                        <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                          <span style={{fontSize:11,fontWeight:600,color:ind.color}}>{n.tag}</span>
+                          <span style={{fontSize:11,color:C.soft}}>{n.date}</span>
+                        </div>
+                      </div>
+                      <div style={{fontSize:13,fontWeight:600,color:C.text,lineHeight:1.5}}>{n.title}</div>
+                      <div style={{fontSize:12,color:C.muted,marginTop:6}}>Tap to read summary →</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })
+      ) : (
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {fNews.length===0 ? (
+            <div style={{background:"#fff",borderRadius:12,border:`1px solid ${C.border}`,padding:"40px 20px",textAlign:"center"}}>
+              <div style={{fontSize:13,color:C.soft}}>No stories match your search.</div>
+            </div>
+          ) : fNews.map(n=>{
+            const ind = INDUSTRIES.find(x=>x.id===n.ind);
+            return (
+              <div key={n.id} style={{background:"#fff",borderRadius:12,border:`1px solid ${C.border}`,boxShadow:"0 1px 6px rgba(0,48,101,0.07)",overflow:"hidden",cursor:"pointer",borderLeft:`3px solid ${ind?.color||C.blue}`}} onClick={()=>setNewsDetail(n)}>
+                <div style={{padding:"12px 16px"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:6,marginBottom:6}}>
+                    <div style={{display:"flex",gap:6}}>
+                      <span style={{fontSize:11,fontWeight:600,color:ind?.color||C.blue,background:(ind?.color||C.blue)+"22",border:`1px solid ${(ind?.color||C.blue)}44`,padding:"2px 8px",borderRadius:20}}>{n.company}</span>
+                      <span style={{fontSize:11,fontWeight:600,color:C.muted,background:C.muted+"22",border:`1px solid ${C.muted}44`,padding:"2px 8px",borderRadius:20}}>{n.cat}</span>
+                    </div>
+                    <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                      <span style={{fontSize:11,fontWeight:600,color:ind?.color||C.blue}}>{n.tag}</span>
+                      <span style={{fontSize:11,color:C.soft}}>{n.date}</span>
+                    </div>
+                  </div>
+                  <div style={{fontSize:13,fontWeight:600,color:C.text,lineHeight:1.5}}>{n.title}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </Sec>
+  );
+}
+
 /* ═══════════════════════════════════════════ */
 export default function App() {
   const [tab, setTab]           = useState("dashboard");
@@ -241,7 +470,7 @@ export default function App() {
 
   // Alumni
   const [alumInd, setAlumInd]   = useState("All");
-  const [alumQ, setAlumQ]       = useState("");
+  const [alumQ, setAlumQ]         = useState("");
   const [selAlum, setSelAlum]   = useState(null);
 
   // Email modal
@@ -252,8 +481,9 @@ export default function App() {
   // Tracker
   const [entries, setEntries]   = useState(INIT_ENTRIES);
   const [logModal, setLogModal] = useState(null); // alumni object
-  const [newNote, setNewNote]   = useState("");
+  const newNoteRef              = useRef("");
   const [noteT, setNoteT]       = useState("Email");
+  const [noteDate, setNoteDate] = useState(new Date().toISOString().slice(0,10));
   const [trkAlum, setTrkAlum]   = useState(null);
 
   // Events calendar
@@ -262,13 +492,15 @@ export default function App() {
 
   // News
   const [newsInd, setNewsInd]   = useState("All");
-  const [newsQ, setNewsQ]       = useState("");
+  const [newsQ, setNewsQ]         = useState("");
   const [newsDetail, setNewsDetail] = useState(null);
 
   // Offers
-  const [rsvpd, setRsvpd]               = useState([]);
+  const [rsvpd, setRsvpd]                   = useState([]);
   const [offerLikes, setOfferLikes]         = useState([]);
   const [openOfferComments, setOpenOfferComments] = useState(null);
+  const [userComments, setUserComments]     = useState({}); // {offerId: [{id, text, date}]}
+  const logDate                             = useRef(new Date().toISOString().slice(0,10));
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   useEffect(()=>{
@@ -280,12 +512,6 @@ export default function App() {
   const go = (t) => { setTab(t); setMenuOpen(false); setSelAlum(null); };
   const p = isMobile ? "12px 14px" : "16px 20px";
 
-  // Filtered alumni
-  const fAlumni = ALUMNI.filter(a=>{
-    const q=alumQ.toLowerCase();
-    return (alumInd==="All"||a.industry===alumInd)
-      && (!q||a.name.toLowerCase().includes(q)||a.company.toLowerCase().includes(q)||a.role.toLowerCase().includes(q));
-  });
 
   // Email generation
   const genEmail = async (a) => {
@@ -305,19 +531,15 @@ export default function App() {
   };
 
   const addNote = () => {
-    if (!newNote.trim()||!logModal) return;
-    setEntries(p=>[{id:Date.now(),alumId:logModal.id,date:new Date().toISOString().slice(0,10),type:noteT,note:newNote.trim()},...p]);
-    setNewNote("");
+    if (!newNoteRef.current.trim()||!logModal) return;
+    setEntries(p=>[{id:Date.now(),alumId:logModal.id,date:noteDate,type:noteT,note:newNoteRef.current.trim()},...p]);
+    newNoteRef.current="";
   };
 
   const upcoming = EVENTS.filter(e=>e.date>=new Date().toISOString().slice(0,10)).slice(0,3);
 
   /* ── Filtered news ── */
-  const fNews = NEWS.filter(n=>{
-    const q=newsQ.toLowerCase();
-    return (newsInd==="All"||n.ind===newsInd)
-      && (!q||n.title.toLowerCase().includes(q)||n.company.toLowerCase().includes(q)||n.cat.toLowerCase().includes(q)||n.tag.toLowerCase().includes(q));
-  });
+
 
   /* ── Calendar helpers ── */
   const daysInMonth = (y,m)=>new Date(y,m+1,0).getDate();
@@ -552,7 +774,15 @@ export default function App() {
                 {/* Comments section */}
                 {openComments&&(
                   <div style={{marginTop:10,paddingLeft:20}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                      <span style={{fontSize:11,fontWeight:700,color:C.muted,textTransform:"uppercase",letterSpacing:0.5}}>{o.comments.length+(userComments[o.id]||[]).length} Comments</span>
+                      <button onClick={()=>setOpenOfferComments(null)}
+                        style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:20,padding:"2px 10px",cursor:"pointer",fontSize:11,color:C.muted,fontFamily:"inherit"}}>
+                        Close ✕
+                      </button>
+                    </div>
                     <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:10}}>
+                      {/* 기존 예시 댓글 */}
                       {o.comments.map(c=>(
                         <div key={c.id} style={{background:C.bg,borderRadius:8,padding:"8px 11px",border:`1px solid ${C.border}`}}>
                           <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
@@ -562,11 +792,31 @@ export default function App() {
                           <div style={{fontSize:12,color:C.text,lineHeight:1.5}}>{c.text}</div>
                         </div>
                       ))}
+                      {/* 사용자가 작성한 댓글 */}
+                      {(userComments[o.id]||[]).map(c=>(
+                        <div key={c.id} style={{background:"#EDF4FB",borderRadius:8,padding:"8px 11px",border:`1px solid ${C.blue}33`}}>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+                            <span style={{fontSize:11,fontWeight:700,color:C.blue}}>You · {c.date}</span>
+                            <button onClick={()=>setUserComments(prev=>({...prev,[o.id]:(prev[o.id]||[]).filter(x=>x.id!==c.id)}))}
+                              style={{background:"transparent",border:"none",cursor:"pointer",color:C.soft,fontSize:14,lineHeight:1,padding:"0 2px"}}>✕</button>
+                          </div>
+                          <div style={{fontSize:12,color:C.text,lineHeight:1.5}}>{c.text}</div>
+                        </div>
+                      ))}
                     </div>
+                    {/* 댓글 작성창 */}
                     <div style={{display:"flex",gap:7}}>
-                      <input placeholder="Add a comment…"
+                      <input
+                        defaultValue=""
+                        placeholder="Add a comment… (Enter to post)"
                         style={{flex:1,border:`1px solid ${C.border}`,borderRadius:8,padding:"7px 10px",fontSize:12,fontFamily:"inherit",outline:"none",background:"#fff",color:C.text}}
-                        onKeyDown={e=>{if(e.key==="Enter"&&e.target.value.trim()){e.target.value="";}}}
+                        onKeyDown={e=>{
+                          if(e.key==="Enter"&&e.target.value.trim()){
+                            const text=e.target.value.trim();
+                            setUserComments(prev=>({...prev,[o.id]:[...(prev[o.id]||[]),{id:Date.now(),text,date:new Date().toISOString().slice(0,10)}]}));
+                            e.target.value="";
+                          }
+                        }}
                       />
                     </div>
                   </div>
@@ -579,127 +829,9 @@ export default function App() {
     </Sec>
   );
 
-  /* ═══ ALUMNI ═══ */
-  const Alumni = () => selAlum ? (
-    <Sec>
-      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
-        <Btn onClick={()=>setSelAlum(null)} style={{padding:"6px 12px",fontSize:12}}>← Back</Btn>
-        <span style={{fontSize:13,color:C.muted}}>Alumni Directory</span>
-      </div>
-      {(()=>{
-        const ind=INDUSTRIES.find(x=>x.id===selAlum.industry);
-        const ic=ind?.color||C.blue;
-        return (
-          <>
-            <Card style={{marginBottom:14}}>
-              <div style={{height:4,background:ic}}/>
-              <div style={{padding:p}}>
-                <div style={{display:"flex",gap:14,alignItems:"flex-start"}}>
-                  <Av i={selAlum.av} size={56} color={ic}/>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:isMobile?16:18,fontWeight:700,color:C.navy,marginBottom:4,fontFamily:"'Playfair Display',serif"}}>{selAlum.name}</div>
-                    <div style={{fontSize:13,color:C.muted,marginBottom:6}}>{selAlum.role}</div>
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
-                      <Tag label={selAlum.company} color={ic}/>
-                      <Tag label={ind?.label||selAlum.industry} color={ic}/>
-                      <span style={{fontSize:11,color:C.soft,alignSelf:"center"}}>{selAlum.cls}</span>
-                    </div>
-                    <Tag label={selAlum.status} color={SC[selAlum.status]||C.blue}/>
-                  </div>
-                </div>
-                <div style={{display:"flex",gap:8,marginTop:14,flexWrap:"wrap"}}>
-                  <Btn active color={ic} onClick={()=>{setEmailModal(selAlum);setDraft("");}}>✉ Draft Cold Email</Btn>
-                  <Btn onClick={()=>{setLogModal(selAlum);}}>📝 Log Interaction</Btn>
-                  <Btn onClick={()=>{setTrkAlum(selAlum);go("tracker");}}>📊 View Timeline</Btn>
-                </div>
-              </div>
-            </Card>
-            <Card style={{marginBottom:14}}>
-              <div style={{padding:p,borderBottom:`1px solid ${C.border}`}}>
-                <h3 style={{fontSize:14,fontWeight:700,color:C.navy,margin:0}}>💬 Notes & Context</h3>
-              </div>
-              <div style={{padding:p}}>
-                <p style={{fontSize:13,color:C.text,lineHeight:1.65,margin:0}}>{selAlum.note}</p>
-                <p style={{fontSize:11,color:C.soft,margin:"8px 0 0"}}>Last contact: {selAlum.last}</p>
-              </div>
-            </Card>
-            <Card>
-              <div style={{padding:p,borderBottom:`1px solid ${C.border}`}}>
-                <h3 style={{fontSize:14,fontWeight:700,color:C.navy,margin:0}}>🎓 Interview Prep — {selAlum.company}</h3>
-              </div>
-              <div style={{padding:p,display:"flex",flexDirection:"column",gap:10}}>
-                {[
-                  {label:"Process",       val:"Typically 4–5 rounds: phone screen, case/technical interview, behavioral round, and a final panel. Expect 6–8 weeks from application to offer."},
-                  {label:"Key Skills",    val:selAlum.industry==="tech"?"Product thinking, data fluency, cross-functional leadership, stakeholder management, SQL basics.":selAlum.industry==="consulting"?"Problem structuring, hypothesis-driven thinking, executive communication, slide craft, case interviews.":selAlum.industry==="finance"?"Financial modeling, valuation (DCF, comps, LBO), sector knowledge, deal execution, attention to detail.":selAlum.industry==="pe_vc"?"LBO modeling, deal sourcing, portfolio ops, operator mindset, growth equity frameworks.":selAlum.industry==="healthcare"?"Healthcare systems, regulatory landscape, market access, reimbursement strategy, clinical operations.":selAlum.industry==="consumer"?"Consumer insight, brand strategy, P&L management, retail economics, go-to-market execution.":selAlum.industry==="media"?"Content strategy, monetization models, audience analytics, licensing & rights, partnership development.":selAlum.industry==="energy"?"Energy economics, ESG integration, infrastructure finance, regulatory policy, project development.":selAlum.industry==="realestate"?"RE finance, cap rates, development underwriting, market analysis, debt structuring.":"Stakeholder management, program evaluation, policy analysis, impact measurement, systems thinking."},
-                  {label:"Alumni Tip",    val:`"${selAlum.note} Make sure to connect your PwC AI/Digital transformation background and RLWRLD experience in Physical AI to what this role demands."`},
-                  {label:"CBS Resources", val:`CMC runs ${selAlum.company} prep workshops each semester. Check the CBS Alumni Interview Database for past questions. Reach out to the relevant CBS industry club for peer prep support.`},
-                ].map(x=>(
-                  <div key={x.label} style={{padding:"12px 14px",background:C.bg,borderRadius:8,border:`1px solid ${C.border}`}}>
-                    <div style={{fontSize:10,fontWeight:700,color:ic,textTransform:"uppercase",letterSpacing:0.5,marginBottom:5}}>{x.label}</div>
-                    <div style={{fontSize:13,color:C.text,lineHeight:1.65}}>{x.val}</div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </>
-        );
-      })()}
-    </Sec>
-  ) : (
-    <Sec>
-      <SH title="Alumni Directory"/>
-      <Card style={{marginBottom:14}}>
-        <div style={{padding:p}}>
-          <input
-            ref={el=>{if(el&&el._alumInit!==true){el.value=alumQ;el._alumInit=true;}}}
-            onChange={e=>setAlumQ(e.target.value)}
-            placeholder="🔍  Search by name, company, or role…"
-            style={{width:"100%",border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",background:C.bg,color:C.text,boxSizing:"border-box",marginBottom:12}}/>
-          <div style={{fontSize:11,fontWeight:700,color:C.muted,marginBottom:6,textTransform:"uppercase",letterSpacing:0.5}}>Filter by Industry</div>
-          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-            <Btn active={alumInd==="All"} onClick={()=>setAlumInd("All")} style={{padding:"4px 10px",fontSize:11}}>All</Btn>
-            {INDUSTRIES.map(ind=>(
-              <Btn key={ind.id} active={alumInd===ind.id} color={ind.color} onClick={()=>setAlumInd(ind.id)} style={{padding:"4px 10px",fontSize:11}}>{ind.label}</Btn>
-            ))}
-          </div>
-          <div style={{fontSize:12,color:C.muted,marginTop:10}}>{fAlumni.length} alumni found</div>
-        </div>
-      </Card>
-      <div style={{display:"flex",flexDirection:"column",gap:10}}>
-        {fAlumni.map(a=>{
-          const ind=INDUSTRIES.find(x=>x.id===a.industry);
-          return (
-            <Card key={a.id} style={{cursor:"pointer"}} onClick={()=>setSelAlum(a)}>
-              <div style={{padding:p}}>
-                <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-                  <Av i={a.av} size={44} color={ind?.color||C.blue}/>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:6,marginBottom:4}}>
-                      <span style={{fontSize:14,fontWeight:700,color:C.navy}}>{a.name}</span>
-                      <Tag label={a.status} color={SC[a.status]||C.blue}/>
-                    </div>
-                    <div style={{fontSize:12,color:C.muted,marginBottom:6}}>{a.role}</div>
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                      <Tag label={a.company} color={ind?.color||C.blue}/>
-                      <Tag label={ind?.label} color={ind?.color||C.blue}/>
-                      <span style={{fontSize:11,color:C.soft,alignSelf:"center"}}>{a.cls}</span>
-                    </div>
-                  </div>
-                </div>
-                <div style={{display:"flex",gap:8,marginTop:12}}>
-                  <Btn active color={ind?.color||C.blue} onClick={e=>{e.stopPropagation();setEmailModal(a);setDraft("");}}>✉ Email</Btn>
-                  <Btn onClick={e=>{e.stopPropagation();setLogModal(a);}}>📝 Log</Btn>
-                  <span style={{marginLeft:"auto",alignSelf:"center",fontSize:12,color:C.soft}}>View profile →</span>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
-    </Sec>
-  );
 
-  /* ═══ TRACKER ═══ */
+
+    /* ═══ TRACKER ═══ */
   const Tracker = () => (
     <Sec>
       <SH title="Networking Tracker"/>
@@ -847,77 +979,8 @@ export default function App() {
     );
   };
 
-  /* ═══ NEWS ═══ */
-  const NewsTab = () => (
-    <Sec>
-      <SH title="Industry News Feed"/>
-      <Card style={{marginBottom:14}}>
-        <div style={{padding:p}}>
-          <input
-            ref={el=>{if(el&&el._newsInit!==true){el.value=newsQ;el._newsInit=true;}}}
-            onChange={e=>setNewsQ(e.target.value)}
-            placeholder="🔍  Search news, companies, topics…"
-            style={{width:"100%",border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",background:C.bg,color:C.text,boxSizing:"border-box",marginBottom:12}}/>
-          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-            <Btn active={newsInd==="All"} onClick={()=>setNewsInd("All")} style={{padding:"4px 10px",fontSize:11}}>All Industries</Btn>
-            {INDUSTRIES.map(ind=>(
-              <Btn key={ind.id} active={newsInd===ind.id} color={ind.color} onClick={()=>setNewsInd(ind.id)} style={{padding:"4px 10px",fontSize:11}}>{ind.label}</Btn>
-            ))}
-          </div>
-          <div style={{fontSize:12,color:C.muted,marginTop:10}}>{fNews.length} stories</div>
-        </div>
-      </Card>
 
-      {newsInd==="All"&&!newsQ ? (
-        INDUSTRIES.map(ind=>{
-          const indNews=NEWS.filter(n=>n.ind===ind.id);
-          if(!indNews.length) return null;
-          return (
-            <div key={ind.id} style={{marginBottom:20}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-                <div style={{width:4,height:18,borderRadius:2,background:ind.color,flexShrink:0}}/>
-                <h3 style={{fontSize:14,fontWeight:700,color:C.navy,margin:0}}>{ind.label}</h3>
-                <span style={{fontSize:11,color:ind.color,background:ind.color+"18",padding:"1px 8px",borderRadius:20,fontWeight:600}}>{indNews.length}</span>
-              </div>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {indNews.map(n=>(
-                  <Card key={n.id} style={{cursor:"pointer",borderLeft:`3px solid ${ind.color}`}} onClick={()=>setNewsDetail(n)}>
-                    <div style={{padding:"12px 16px"}}>
-                      <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:6,marginBottom:6}}>
-                        <div style={{display:"flex",gap:6}}><Tag label={n.company} color={ind.color}/><Tag label={n.cat} color={C.muted}/></div>
-                        <div style={{display:"flex",gap:6,alignItems:"center"}}><span style={{fontSize:11,fontWeight:600,color:ind.color}}>{n.tag}</span><span style={{fontSize:11,color:C.soft}}>{n.date}</span></div>
-                      </div>
-                      <div style={{fontSize:13,fontWeight:600,color:C.text,lineHeight:1.5}}>{n.title}</div>
-                      <div style={{fontSize:12,color:C.muted,marginTop:6}}>Tap to read summary →</div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          );
-        })
-      ) : (
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {fNews.length===0 ? (
-            <Card style={{padding:"40px 20px",textAlign:"center"}}><div style={{fontSize:13,color:C.soft}}>No stories match your search.</div></Card>
-          ) : fNews.map(n=>{
-            const ind=INDUSTRIES.find(x=>x.id===n.ind);
-            return (
-              <Card key={n.id} style={{cursor:"pointer",borderLeft:`3px solid ${ind?.color||C.blue}`}} onClick={()=>setNewsDetail(n)}>
-                <div style={{padding:"12px 16px"}}>
-                  <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:6,marginBottom:6}}>
-                    <div style={{display:"flex",gap:6}}><Tag label={n.company} color={ind?.color||C.blue}/><Tag label={n.cat} color={C.muted}/></div>
-                    <div style={{display:"flex",gap:6,alignItems:"center"}}><span style={{fontSize:11,fontWeight:600,color:ind?.color||C.blue}}>{n.tag}</span><span style={{fontSize:11,color:C.soft}}>{n.date}</span></div>
-                  </div>
-                  <div style={{fontSize:13,fontWeight:600,color:C.text,lineHeight:1.5}}>{n.title}</div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-      )}
-    </Sec>
-  );
+
 
 
   return (
@@ -999,13 +1062,23 @@ export default function App() {
                     ))}
                   </div>
                 </div>
+                <div style={{marginBottom:10}}>
+                  <div style={{fontSize:11,fontWeight:700,color:C.muted,marginBottom:6,textTransform:"uppercase",letterSpacing:0.5}}>Date</div>
+                  <input
+                    type="date"
+                    value={noteDate}
+                    onChange={e=>setNoteDate(e.target.value)}
+                    style={{border:`1px solid ${C.border}`,borderRadius:8,padding:"8px 12px",fontSize:13,fontFamily:"inherit",outline:"none",background:"#fff",color:C.text,width:"100%",boxSizing:"border-box"}}
+                  />
+                </div>
                 <div style={{marginBottom:12}}>
                   <div style={{fontSize:11,fontWeight:700,color:C.muted,marginBottom:6,textTransform:"uppercase",letterSpacing:0.5}}>Notes</div>
                   <textarea
-                    value={newNote}
-                    onChange={e=>setNewNote(e.target.value)}
+                    defaultValue=""
+                    onChange={e=>{newNoteRef.current=e.target.value;}}
                     placeholder="What did you discuss? Key takeaways? Next steps?"
                     rows={4}
+                    key={logModal?.id}
                     style={{width:"100%",border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 12px",fontSize:13,fontFamily:"inherit",outline:"none",resize:"vertical",background:"#fff",boxSizing:"border-box",color:C.text}}
                   />
                 </div>
@@ -1072,10 +1145,10 @@ export default function App() {
         );
       })()}
       {tab==="dashboard" && <Dashboard/>}
-      {tab==="alumni"    && <Alumni/>}
+      {tab==="alumni"    && <AlumniPage alumInd={alumInd} setAlumInd={setAlumInd} alumQ={alumQ} setAlumQ={setAlumQ} selAlum={selAlum} setSelAlum={setSelAlum} setEmailModal={setEmailModal} setDraft={setDraft} setLogModal={setLogModal} setTrkAlum={setTrkAlum} setTab={setTab} setMenuOpen={setMenuOpen} isMobile={isMobile} p={p}/>}
       {tab==="tracker"   && <Tracker/>}
       {tab==="events"    && <Events/>}
-      {tab==="news"      && <NewsTab/>}
+      {tab==="news"      && <NewsPage newsInd={newsInd} setNewsInd={setNewsInd} newsQRef={newsQRef} setNewsQ={setNewsQ} fNews={fNews} newsQ={newsQ} setNewsDetail={setNewsDetail} isMobile={isMobile} p={p}/>}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600;700&display=swap');
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
